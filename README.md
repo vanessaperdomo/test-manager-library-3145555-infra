@@ -60,3 +60,8 @@ docker compose down
 # Detener y eliminar volúmenes (reinicio desde cero)
 docker compose down -v
 ```
+
+
+## Operational Scripts
+- `scripts/healthcheck.sh`: Verifies running container states and port bindings.
+- `scripts/backup-db.sh`: Creates timestamped SQL dumps from the PostgreSQL container.
