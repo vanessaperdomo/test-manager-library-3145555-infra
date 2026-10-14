@@ -1,50 +1,62 @@
 # test-manager-library-3145555-infra
 
-> **Prueba técnica · Ficha ADSO 3145555**
-> Horario: **miércoles 14 de octubre de 2026, de 6:50 a. m. a 11:00 a. m.** (hora Colombia). Entrega a las **11:00 a. m.**
+> **Infraestructura de Contenedores y Motor de Base de Datos — Manager Library**
+> Ficha ADSO 3145555 · SDD (Spec-Driven Development)
 
-Este repositorio es la **infraestructura** de *Manager Library*: contenedores, red, volúmenes y el motor de base de datos vacío. **Empieza vacío a propósito**: se construye en el fork de cada aprendiz.
+Este repositorio contiene la definición de infraestructura contenerizada para levantar el motor de base de datos **PostgreSQL 16**, con el esquema oficial `library`, red compartida y volumen persistente.
 
-## Instrucciones
+---
 
-Cada aprendiz debe **crear el fork** de los seis repositorios del proyecto y **resolver el proyecto
-con el spec planteado**.
+## 1. Requisitos Cumplidos según la Especificación
 
-1. Hacer fork, a su cuenta de GitHub, de cada repositorio de la tabla del final.
-2. Leer el spec en [`test-manager-library-3145555-docs`](https://github.com/code-sena/test-manager-library-3145555-docs).
-   Se entrega en dos versiones: `spec-python/` y `spec-.net/`.
-3. Desarrollar en los forks.
+- **Motor:** PostgreSQL 16 (`postgres:16-alpine`).
+- **Esquema:** `library` inicializado automáticamente mediante script en `docker-entrypoint-initdb.d/01-init-schema.sql`.
+- **Extensiones:** `uuid-ossp` y `pgcrypto` habilitadas para soportar identificadores UUID v4 nativos.
+- **Zona Horaria:** Servidor forzado a `UTC`.
+- **RNF-5:** El entorno levanta con un solo comando y la base de datos arranca limpia.
 
-## El reto se desarrolla con React y PHP (Laravel)
+---
 
-El spec está escrito para Python y para .NET, pero el reto **no** se hace en esos lenguajes:
+## 2. Puesta en Marcha
 
-| Capa | Tecnología del reto |
+### Paso 1: Configurar variables de entorno
+```bash
+cp .env.example .env
+```
+
+### Paso 2: Levantar el contenedor
+```bash
+docker compose up -d
+```
+
+### Paso 3: Verificar estado de salud
+```bash
+docker compose ps
+```
+El contenedor `manager-library-postgres` debe reportar `Up (healthy)`.
+
+---
+
+## 3. Parámetros de Conexión (Para Backend Laravel)
+
+| Variable | Valor por defecto |
 |---|---|
-| Frontend | React |
-| Backend | PHP con Laravel |
+| `DB_CONNECTION` | `pgsql` |
+| `DB_HOST` | `127.0.0.1` (o `postgres` dentro de la red docker) |
+| `DB_PORT` | `5432` |
+| `DB_DATABASE` | `manager_library` |
+| `DB_USERNAME` | `library_user` |
+| `DB_PASSWORD` | `library_secret` |
+| `DB_SCHEMA` | `library` |
 
-Lo que el spec define sobre el negocio —historias, criterios de aceptación, reglas, contrato de la
-API, modelo de datos— se respeta. Lo que define sobre la tecnología se traduce a React y Laravel.
+---
 
-## La prueba no consiste en escribir el código
+## 4. Detener y Limpiar
 
-El propósito principal es ver la **capacidad de desempeño con SDD** (*Spec-Driven Development*,
-desarrollo guiado por especificación): cómo se lee, se interpreta y se aplica una especificación
-para llevarla a un stack distinto. El código es el medio, no el fin.
+```bash
+# Detener contenedores
+docker compose down
 
-## Entrega
-
-Cuenta lo que quede **subido a los forks antes de las 11:00 a. m.** Lo que llegue después no se revisa.
-No hay prórroga: suban avances parciales con commits pequeños durante la prueba.
-
-## Los seis repositorios
-
-| Repositorio | Qué va ahí |
-|---|---|
-| [`test-manager-library-3145555-docs`](https://github.com/code-sena/test-manager-library-3145555-docs) | El spec: `spec-python/` y `spec-.net/` |
-| [`test-manager-library-3145555-api`](https://github.com/code-sena/test-manager-library-3145555-api) | Backend en PHP (Laravel) |
-| [`test-manager-library-3145555-app`](https://github.com/code-sena/test-manager-library-3145555-app) | Frontend en React |
-| [`test-manager-library-3145555-page`](https://github.com/code-sena/test-manager-library-3145555-page) | Sitio público estático de presentación |
-| [`test-manager-library-3145555-infra`](https://github.com/code-sena/test-manager-library-3145555-infra) | Contenedores, red, volúmenes y motor de base de datos vacío |
-| [`test-manager-library-3145555-tool`](https://github.com/code-sena/test-manager-library-3145555-tool) | Utilidades: sembrador de datos de demostración |
+# Detener y eliminar volúmenes (reinicio desde cero)
+docker compose down -v
+```
